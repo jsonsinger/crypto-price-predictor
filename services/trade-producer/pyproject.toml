@@ -9,8 +9,23 @@ readme = "README.md"
 python = "^3.10"
 quixstreams = "^2.10.0"
 loguru = "^0.7.2"
+websocket-client = "^1.8.0"
 
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.6.5"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.format]
+quote-style = "single"
+indent-style = "space"
+docstring-code-format = true
+
+[tool.ruff.lint]
+extend-select = ["I"]
