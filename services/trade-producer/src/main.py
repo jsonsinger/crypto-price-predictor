@@ -1,6 +1,9 @@
+from typing import List
+
 from loguru import logger
 from quixstreams import Application
-from src.kraken_websocket_api import KrakenWebsocketAPI
+
+from src.kraken_websocket_api import KrakenWebsocketAPI, Trade
 
 
 def produce_trades(
@@ -24,7 +27,7 @@ def produce_trades(
     app = Application(broker_address=kafka_broker_address)
 
     # Define a topic `kafka_topic` with JSON serialization
-    topic = app.topic(name=kafka_topic, value_serializer="json")
+    topic = app.topic(name=kafka_topic, value_serializer='json')
 
     # Create a KrakenWebsocketAPI instance
     kraken_api = KrakenWebsocketAPI(product_id=product_id)
@@ -33,22 +36,27 @@ def produce_trades(
     with app.get_producer() as producer:
         while not kraken_api.is_done():
             # Get the latest batch of trades
-            trades = kraken_api.get_trades()
+            trades: List[Trade] = kraken_api.get_trades()
 
             for trade in trades:
                 # Serialize the trade and publish it to the topic
                 # transform it into a sequence of bytes
-                message = topic.serialize(key=trade["product_id"], value=trade)
+                message = topic.serialize(
+                    key=trade.product_id, value=trade.model_dump()
+                )
 
                 # Produce a message into the Kafka topic
                 producer.produce(topic=topic.name, value=message.value, key=message.key)
 
-                logger.debug(f"Pushed trade to Kafka: {trade}")
+                logger.debug(f'Pushed trade to Kafka: {trade}')
 
 
-if __name__ == "__main__":
-    produce_trades(
-        kafka_broker_address="localhost:19092",
-        kafka_topic="trades",
-        product_id="ETH-USD",
-    )
+if __name__ == '__main__':
+    try:
+        produce_trades(
+            kafka_broker_address='localhost:19092',
+            kafka_topic='trades',
+            product_id='ETH/EUR',
+        )
+    except KeyboardInterrupt:
+        logger.info('Closing the Trade Producer')
