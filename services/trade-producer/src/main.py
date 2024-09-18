@@ -3,6 +3,7 @@ from typing import List
 from loguru import logger
 from quixstreams import Application
 
+from src.config import config
 from src.kraken_websocket_api import KrakenWebsocketAPI, Trade
 
 
@@ -54,9 +55,9 @@ def produce_trades(
 if __name__ == '__main__':
     try:
         produce_trades(
-            kafka_broker_address='localhost:19092',
-            kafka_topic='trades',
-            product_id='ETH/EUR',
+            kafka_broker_address=config.kafka_broker_address,
+            kafka_topic=config.kafka_topic,
+            product_id=config.product_id,
         )
     except KeyboardInterrupt:
         logger.info('Closing the Trade Producer')
