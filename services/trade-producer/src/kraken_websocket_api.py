@@ -26,21 +26,20 @@ class KrakenWebsocketAPI:
 
     URL = 'wss://ws.kraken.com/v2'
 
-    def __init__(self, product_id: str):
+    def __init__(self, product_ids: List[str]):
         """
         Initializes the KrakenWebsocketApi instance
 
         Args:
-            product_id (str): The product ID to get trades for
+            product_ids (List[str]): The product IDs to get trades for
         """
-        self.product_id = product_id
 
         # Establish a connection to the Kraken Websocket API
         self._ws = create_connection(self.URL)
         logger.debug('Connected to the Kraken Websocket API')
 
-        # Subscribe to the given product ID
-        self._subscribe(product_id)
+        # Subscribe to the given product IDs
+        self._subscribe(product_ids)
 
     def get_trades(self) -> List[Trade]:
         """
@@ -84,7 +83,7 @@ class KrakenWebsocketAPI:
         """
         return False
 
-    def _subscribe(self, product_id: str):
+    def _subscribe(self, product_ids: List[str]):
         """
         Subscribe to trades on the Kraken Websocket API for the given product ID
 
@@ -94,21 +93,22 @@ class KrakenWebsocketAPI:
         Returns:
             None
         """
-        logger.debug(f'Subscribing to trades for {product_id}')
+        logger.debug(f'Subscribing to trades for {product_ids}')
 
         msg = {
             'method': 'subscribe',
-            'params': {'channel': 'trade', 'symbol': [product_id], 'snapshot': False},
+            'params': {'channel': 'trade', 'symbol': product_ids, 'snapshot': False},
         }
 
         self._ws.send(json.dumps(msg))
-        logger.debug(f'Successfully subscribed to trades for {product_id}')
+        logger.debug(f'Successfully subscribed to trades for {product_ids}')
 
-        # Ignore the initial system status and confirmation messages received from the API as they are not trade events
-        for product_id in [product_id]:
-            _ = self._ws.recv()
-            logger.debug(f'Received message: {_}')
+        # Ignore the initial system status
+        _ = self._ws.recv()
+        logger.debug(f'Received message: {_}')
 
+        for product_id in product_ids:
+            # Ignore the subscription confirmation messages received for each product_id
             _ = self._ws.recv()
             logger.debug(f'Received message: {_}')
 

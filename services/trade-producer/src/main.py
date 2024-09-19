@@ -10,7 +10,7 @@ from src.kraken_websocket_api import KrakenWebsocketAPI, Trade
 def produce_trades(
     kafka_broker_address: str,
     kafka_topic: str,
-    product_id: str,
+    product_ids: List[str],
 ):
     """
     Reads trades from the Kraken Websocket API and publishes them to the given `kafka_topic`
@@ -18,7 +18,7 @@ def produce_trades(
     Args:
         kafka_broker_address (str): The address of the Kafka broker
         kafka_topic (str): The Kafka topic to publish the trades to
-        product_id (str): The product ID to get trades for
+        product_ids (List[str]): The product IDs to get trades for
 
     Returns:
         None
@@ -31,7 +31,7 @@ def produce_trades(
     topic = app.topic(name=kafka_topic, value_serializer='json')
 
     # Create a KrakenWebsocketAPI instance
-    kraken_api = KrakenWebsocketAPI(product_id=product_id)
+    kraken_api = KrakenWebsocketAPI(product_ids=product_ids)
 
     # Create a Producer instance
     with app.get_producer() as producer:
@@ -57,7 +57,7 @@ if __name__ == '__main__':
         produce_trades(
             kafka_broker_address=config.kafka_broker_address,
             kafka_topic=config.kafka_topic,
-            product_id=config.product_id,
+            product_ids=config.product_ids,
         )
     except KeyboardInterrupt:
         logger.info('Closing the Trade Producer')
