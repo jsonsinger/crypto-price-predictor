@@ -66,18 +66,15 @@ def transform_trade_to_ohlcv(
 
 
 def ohlc_initializer(trade: dict):
-    logger.info(trade)
     """
     Initialize the OHLC data with the first trade
     """
     return {
-        #'product_id': trade['product_id'],
         'open': trade['price'],
         'high': trade['price'],
         'low': trade['price'],
         'close': trade['price'],
         'volume': trade['quantity'],
-        #'timestamp_ms': trade['timestamp_ms'],
     }
 
 
@@ -89,7 +86,6 @@ def ohlc_reducer(candle: dict, trade: dict):
     candle['low'] = min(candle['low'], trade['price'])
     candle['close'] = trade['price']
     candle['volume'] += trade['quantity']
-    # candle['timestamp_ms'] = trade['timestamp_ms']
 
     return candle
 
