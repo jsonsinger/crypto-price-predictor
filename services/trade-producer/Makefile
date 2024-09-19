@@ -1,5 +1,14 @@
-run:
+run-dev:
 	poetry run python src/main.py
+
+build:
+	docker build -t trade-producer .
+
+run: build
+	docker run \
+		--network=redpanda_network \
+		--env-file .env.prod \
+		trade-producer
 
 lint:
 	poetry run ruff check --fix

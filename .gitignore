@@ -196,3 +196,4 @@ ca.cert
 **/credentials.env
 .venv/
 certificates/
+.env.prod
