@@ -3,6 +3,8 @@ from datetime import timedelta
 from loguru import logger
 from quixstreams import Application
 
+from src.config import ohlc_config as config
+
 
 def transform_trade_to_ohlcv(
     kafka_broker_address: str,
@@ -94,9 +96,9 @@ def ohlc_reducer(candle: dict, trade: dict):
 
 if __name__ == '__main__':
     transform_trade_to_ohlcv(
-        kafka_broker_address='localhost:19092',
-        kafka_input_topic='trades',
-        kafka_output_topic='ohlcv',
-        kafka_consumer_group='trade-to-ohlcv',
-        ohlc_window=60,
+        kafka_broker_address=config.kafka_broker_address,
+        kafka_input_topic=config.kafka_input_topic,
+        kafka_output_topic=config.kafka_output_topic,
+        kafka_consumer_group=config.kafka_consumer_group,
+        ohlc_window=config.ohlc_window,
     )
