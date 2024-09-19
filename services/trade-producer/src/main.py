@@ -60,4 +60,6 @@ if __name__ == '__main__':
             product_ids=config.product_ids,
         )
     except KeyboardInterrupt:
-        logger.info('Closing the Trade Producer')
+        logger.info(
+            'Trade Producer is shutting down! Time to let the service cool off.'
+        )
