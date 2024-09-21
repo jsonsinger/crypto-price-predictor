@@ -52,10 +52,11 @@ def transform_trade_to_ohlcv(
     sdf['low'] = sdf['value']['low']
     sdf['close'] = sdf['value']['close']
     sdf['volume'] = sdf['value']['volume']
+    sdf['product_id'] = sdf['value']['product_id']
     sdf['timestamp_ms'] = sdf['end']
 
     # Keep only the necessary columns
-    sdf = sdf[['open', 'high', 'low', 'close', 'volume', 'timestamp_ms']]
+    sdf = sdf[['open', 'high', 'low', 'close', 'volume', 'timestamp_ms', 'product_id']]
 
     sdf.update(logger.debug)
 
@@ -75,6 +76,7 @@ def ohlc_initializer(trade: dict):
         'low': trade['price'],
         'close': trade['price'],
         'volume': trade['quantity'],
+        'product_id': trade['product_id'],
     }
 
 
@@ -86,6 +88,7 @@ def ohlc_reducer(candle: dict, trade: dict):
     candle['low'] = min(candle['low'], trade['price'])
     candle['close'] = trade['price']
     candle['volume'] += trade['quantity']
+    candle['product_id'] = trade['product_id']
 
     return candle
 
