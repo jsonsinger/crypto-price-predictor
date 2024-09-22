@@ -1,5 +1,5 @@
 run-dev:
-	poetry run python src/main.py
+	poetry run python -m src.main
 
 build:
 	docker build -t trade-producer .

@@ -1,25 +1,15 @@
 import json
 from datetime import datetime, timezone
-from time import sleep
 from typing import List
 
 from loguru import logger
-from pydantic import BaseModel
 from websocket import create_connection
 
-
-class Trade(BaseModel):
-    """
-    A class to represent a trade event
-    """
-
-    product_id: str
-    quantity: float
-    price: float
-    timestamp_ms: int
+from .base import KrakenBaseAPI
+from .trade import Trade
 
 
-class KrakenWebsocketAPI:
+class KrakenWebsocketAPI(KrakenBaseAPI):
     """
     A class for reading real-time trades from the Kraken Websocket API
     """
@@ -71,7 +61,6 @@ class KrakenWebsocketAPI:
                 )
             )
 
-        sleep(1)
         return trades
 
     def is_done(self) -> bool:

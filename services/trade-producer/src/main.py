@@ -3,14 +3,16 @@ from typing import List
 from loguru import logger
 from quixstreams import Application
 
-from src.config import config
-from src.kraken_websocket_api import KrakenWebsocketAPI, Trade
+from .api.base import KrakenBaseAPI
+from .api.kraken_websocket_api import KrakenWebsocketAPI
+from .api.trade import Trade
+from .config import config
 
 
 def produce_trades(
     kafka_broker_address: str,
     kafka_topic: str,
-    product_ids: List[str],
+    kraken_api: KrakenBaseAPI,
 ):
     """
     Reads trades from the Kraken Websocket API and publishes them to the given `kafka_topic`
@@ -29,9 +31,6 @@ def produce_trades(
 
     # Define a topic `kafka_topic` with JSON serialization
     topic = app.topic(name=kafka_topic, value_serializer='json')
-
-    # Create a KrakenWebsocketAPI instance
-    kraken_api = KrakenWebsocketAPI(product_ids=product_ids)
 
     # Create a Producer instance
     with app.get_producer() as producer:
@@ -54,11 +53,14 @@ def produce_trades(
 
 if __name__ == '__main__':
     try:
+        kraken_api = KrakenWebsocketAPI(product_ids=config.product_ids)
+
         produce_trades(
             kafka_broker_address=config.kafka_broker_address,
             kafka_topic=config.kafka_topic,
-            product_ids=config.product_ids,
+            kraken_api=kraken_api,
         )
+
     except KeyboardInterrupt:
         logger.info(
             'Trade Producer is shutting down! Time to let the service cool off.'
