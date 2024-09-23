@@ -54,7 +54,7 @@ def produce_trades(
 
 if __name__ == '__main__':
     try:
-        if not config.backfill_trades:
+        if not config.backfill_mode:
             kraken_api = KrakenWebsocketAPI(product_ids=config.product_ids)
         else:
             kraken_api = KrakenRestAPI(

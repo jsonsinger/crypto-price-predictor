@@ -7,7 +7,7 @@ class TradeProducerConfig(BaseSettings):
     kafka_broker_address: str
     kafka_topic: str
     product_ids: List[str]
-    backfill_trades: Optional[bool] = False
+    backfill_mode: Optional[bool] = False
     last_n_days: Optional[int] = 1
 
     # model_config = SettingsConfigDict(env_file=('.env'))

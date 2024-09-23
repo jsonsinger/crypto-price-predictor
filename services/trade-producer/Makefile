@@ -2,7 +2,7 @@ run-dev:
 	poetry run python -m src.main
 
 run-dev-backfill:
-	BACKFILL_TRADES=true \
+	BACKFILL_MODE=true \
 	KAFKA_TOPIC=trades_backfill \
 	poetry run python -m src.main
 
@@ -19,7 +19,7 @@ run-backfill: build
 	docker run \
 		--network=redpanda_network \
 		--env-file .env.prod \
-		-e BACKFILL_TRADES=true \
+		-e BACKFILL_MODE=true \
 		-e KAFKA_TOPIC=trades_backfill \
 		trade-producer
 
