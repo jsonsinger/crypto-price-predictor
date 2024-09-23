@@ -16,4 +16,4 @@ COPY . /app
 RUN poetry install
 
 # Run the container
-CMD ["poetry", "run", "python", "src/main.py"]
+CMD ["poetry", "run", "python", "-m", "src.main"]
