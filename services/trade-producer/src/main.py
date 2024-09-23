@@ -2,6 +2,7 @@ from typing import List
 
 from loguru import logger
 from quixstreams import Application
+from quixstreams.models import TopicConfig
 
 from .api.base import KrakenBaseAPI
 from .api.kraken_rest_api import KrakenRestAPI
@@ -31,7 +32,13 @@ def produce_trades(
     app = Application(broker_address=kafka_broker_address)
 
     # Define a topic `kafka_topic` with JSON serialization
-    topic = app.topic(name=kafka_topic, value_serializer='json')
+
+    # According to [Quix documentation](https://quix.io/docs/quix-streams/advanced/topics.html), you should have 2-3 times more partitions than the number of replicas you expect to use.
+    topic = app.topic(
+        name=kafka_topic,
+        value_serializer='json',
+        config=TopicConfig(num_partitions=2, replication_factor=1),
+    )
 
     # Create a Producer instance
     with app.get_producer() as producer:
@@ -43,7 +50,7 @@ def produce_trades(
                 # Serialize the trade and publish it to the topic
                 # transform it into a sequence of bytes
                 message = topic.serialize(
-                    key=trade.product_id, value=trade.model_dump()
+                    key=trade.product_id.replace('/', '-'), value=trade.model_dump()
                 )
 
                 # Produce a message into the Kafka topic
