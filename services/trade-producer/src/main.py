@@ -4,6 +4,7 @@ from loguru import logger
 from quixstreams import Application
 
 from .api.base import KrakenBaseAPI
+from .api.kraken_rest_api import KrakenRestAPI
 from .api.kraken_websocket_api import KrakenWebsocketAPI
 from .api.trade import Trade
 from .config import config
@@ -53,7 +54,13 @@ def produce_trades(
 
 if __name__ == '__main__':
     try:
-        kraken_api = KrakenWebsocketAPI(product_ids=config.product_ids)
+        if not config.backfill_trades:
+            kraken_api = KrakenWebsocketAPI(product_ids=config.product_ids)
+        else:
+            kraken_api = KrakenRestAPI(
+                product_ids=config.product_ids,
+                last_n_days=config.last_n_days,
+            )
 
         produce_trades(
             kafka_broker_address=config.kafka_broker_address,
