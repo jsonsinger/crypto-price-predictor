@@ -8,7 +8,7 @@ class TradeProducerConfig(BaseSettings):
     kafka_topic: str
     product_ids: List[str]
     backfill_trades: Optional[bool] = False
-    last_n_days: int
+    last_n_days: Optional[int] = 1
 
     # model_config = SettingsConfigDict(env_file=('.env'))
 
