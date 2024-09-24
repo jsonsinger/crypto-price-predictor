@@ -14,7 +14,6 @@ services:
         environment:
             - BACKFILL_MODE=true
             - KAFKA_TOPIC=trade_backfill
-            - AUTO_OFFSET_RESET=earliest
 
     trade-to-ohlc:
         build:
@@ -28,7 +27,6 @@ services:
             - KAFKA_INPUT_TOPIC=trade_backfill
             - KAFKA_OUTPUT_TOPIC=ohlcv_backfill
             - KAFKA_CONSUMER_GROUP=trade_to_ohlcv_backfill
-            - AUTO_OFFSET_RESET=earliest
 
     topic-to-feature-store:
         build:
@@ -40,6 +38,7 @@ services:
             - ../services/topic-to-feature-store/.env.prod
             - ../services/topic-to-feature-store/credentials.env
         environment:
-            - BATCH_SIZE=40000
             - KAFKA_INPUT_TOPIC=ohlcv_backfill
-            - KAFKA_CONSUMER_GROUP=consumer_feature_store_backfill
+            - KAFKA_CONSUMER_GROUP=topic_to_feature_store_backfill
+            - START_OFFLINE_MATERIALIZATION=TRUE
+            - BATCH_SIZE=5000
