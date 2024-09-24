@@ -40,7 +40,9 @@ def transform_trade_to_ohlcv(
         name=kafka_input_topic,
         value_deserializer='json',
         timestamp_extractor=custom_ts_extractor,
+        config=TopicConfig(num_partitions=2, replication_factor=1),
     )
+
     output_topic = app.topic(
         name=kafka_output_topic,
         value_serializer='json',
