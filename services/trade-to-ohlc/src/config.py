@@ -9,7 +9,7 @@ class TradeToOHLCVConfig(BaseSettings):
     kafka_output_topic: str
     kafka_consumer_group: str
     ohlc_window: int
-    backfill_mode: Optional[bool] = False
+    auto_offset_reset: Optional[str] = 'latest'
 
     class Config:
         env_file = '.env'

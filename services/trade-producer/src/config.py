@@ -9,6 +9,7 @@ class TradeProducerConfig(BaseSettings):
     product_ids: List[str]
     backfill_mode: Optional[bool] = False
     last_n_days: Optional[int] = 1
+    auto_offset_reset: Optional[str] = 'latest'
 
     # model_config = SettingsConfigDict(env_file=('.env'))
 
