@@ -27,6 +27,7 @@ run-backfill: build
 	docker run \
 		--network=redpanda_network \
 		--env-file .env.prod \
+		--env-file credentials.env \
 		-e BATCH_SIZE=$(BATCH_SIZE) \
 		-e KAFKA_INPUT_TOPIC=$(BACKFILL_INPUT_TOPIC) \
 		-e KAFKA_CONSUMER_GROUP=$(BACKFILL_CONSUMER_GROUP) \

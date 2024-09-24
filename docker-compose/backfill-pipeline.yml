@@ -1,0 +1,45 @@
+name: backfill_pipeline
+networks:
+    redpanda_network:
+        external: true
+services:
+    trade-producer:
+        build:
+            context: ../services/trade-producer
+            dockerfile: Dockerfile
+        networks:
+            - redpanda_network
+        env_file:
+            - ../services/trade-producer/.env.prod
+        environment:
+            - BACKFILL_MODE=true
+            - KAFKA_TOPIC=trade_backfill
+            - AUTO_OFFSET_RESET=earliest
+
+    trade-to-ohlc:
+        build:
+            context: ../services/trade-to-ohlc
+            dockerfile: Dockerfile
+        networks:
+            - redpanda_network
+        env_file:
+            - ../services/trade-to-ohlc/.env.prod
+        environment:
+            - KAFKA_INPUT_TOPIC=trade_backfill
+            - KAFKA_OUTPUT_TOPIC=ohlcv_backfill
+            - KAFKA_CONSUMER_GROUP=trade_to_ohlcv_backfill
+            - AUTO_OFFSET_RESET=earliest
+
+    topic-to-feature-store:
+        build:
+            context: ../services/topic-to-feature-store
+            dockerfile: Dockerfile
+        networks:
+            - redpanda_network
+        env_file:
+            - ../services/topic-to-feature-store/.env.prod
+            - ../services/topic-to-feature-store/credentials.env
+        environment:
+            - BATCH_SIZE=40000
+            - KAFKA_INPUT_TOPIC=ohlcv_backfill
+            - KAFKA_CONSUMER_GROUP=consumer_feature_store_backfill

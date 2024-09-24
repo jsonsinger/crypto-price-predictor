@@ -8,8 +8,16 @@ stop-redpanda:
 
 start-feature-pipeline:
 	@echo "Starting Feature Pipeline..."
-	docker compose -f feature-pipeline.yml up -d
+	docker compose -f feature-pipeline.yml up --build -d
 
 stop-feature-pipeline:
 	@echo "Stopping Feature Pipeline..."
 	docker compose -f feature-pipeline.yml down
+
+start-backfill-pipeline:
+	@echo "Starting Backfill Pipeline..."
+	docker compose -f backfill-pipeline.yml up --build -d
+
+stop-backfill-pipeline:
+	@echo "Stopping Backfill Pipeline..."
+	docker compose -f backfill-pipeline.yml down
