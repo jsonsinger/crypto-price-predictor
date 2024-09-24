@@ -1,7 +1,10 @@
 from datetime import timedelta
+from typing import Any, List, Optional, Tuple
 
 from loguru import logger
 from quixstreams import Application
+from quixstreams.models import TopicConfig
+from quixstreams.models.timestamps import TimestampType
 
 from src.config import ohlc_config as config
 
@@ -33,8 +36,18 @@ def transform_trade_to_ohlcv(
         consumer_group=kafka_consumer_group,
     )
 
-    input_topic = app.topic(name=kafka_input_topic, value_deserializer='json')
-    output_topic = app.topic(name=kafka_output_topic, value_serializer='json')
+    input_topic = app.topic(
+        name=kafka_input_topic,
+        value_deserializer='json',
+        timestamp_extractor=custom_ts_extractor,
+        config=TopicConfig(num_partitions=2, replication_factor=1),
+    )
+
+    output_topic = app.topic(
+        name=kafka_output_topic,
+        value_serializer='json',
+        config=TopicConfig(num_partitions=2, replication_factor=1),
+    )
 
     # Create a Quicstreams DataFrame
     sdf = app.dataframe(input_topic)
@@ -64,6 +77,18 @@ def transform_trade_to_ohlcv(
     sdf.to_topic(output_topic)
 
     app.run(sdf)
+
+
+def custom_ts_extractor(
+    value: Any,
+    headers: Optional[List[Tuple[str, bytes]]],
+    timestamp: float,
+    timestamp_type: TimestampType,
+):
+    """
+    Specifying a custom timestamp extractor to use the timestamp from the message payload instead of Kafka's default timestamp
+    """
+    return value['timestamp_ms']
 
 
 def ohlc_initializer(trade: dict):
