@@ -15,6 +15,7 @@ def transform_trade_to_ohlcv(
     kafka_output_topic: str,
     kafka_consumer_group: str,
     ohlc_window: int,
+    auto_offset_reset: str,
 ):
     """
     Reads trades from the given `kafka_input_topic`, transforms them into OHLC data, and publishes them to the `kafka_output_topic`
@@ -34,19 +35,20 @@ def transform_trade_to_ohlcv(
     app = Application(
         broker_address=kafka_broker_address,
         consumer_group=kafka_consumer_group,
+        auto_offset_reset=auto_offset_reset,
     )
 
     input_topic = app.topic(
         name=kafka_input_topic,
         value_deserializer='json',
         timestamp_extractor=custom_ts_extractor,
-        config=TopicConfig(num_partitions=2, replication_factor=1),
+        # config=TopicConfig(num_partitions=2, replication_factor=1),
     )
 
     output_topic = app.topic(
         name=kafka_output_topic,
         value_serializer='json',
-        config=TopicConfig(num_partitions=2, replication_factor=1),
+        # config=TopicConfig(num_partitions=2, replication_factor=1),
     )
 
     # Create a Quicstreams DataFrame
@@ -69,7 +71,7 @@ def transform_trade_to_ohlcv(
     sdf['timestamp_ms'] = sdf['end']
 
     # Keep only the necessary columns
-    sdf = sdf[['open', 'high', 'low', 'close', 'volume', 'timestamp_ms', 'product_id']]
+    sdf = sdf[['product_id', 'timestamp_ms', 'open', 'high', 'low', 'close', 'volume']]
 
     sdf.update(logger.debug)
 
@@ -125,4 +127,5 @@ if __name__ == '__main__':
         kafka_output_topic=config.kafka_output_topic,
         kafka_consumer_group=config.kafka_consumer_group,
         ohlc_window=config.ohlc_window,
+        auto_offset_reset=config.auto_offset_reset,
     )

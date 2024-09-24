@@ -15,6 +15,7 @@ def produce_trades(
     kafka_broker_address: str,
     kafka_topic: str,
     kraken_api: KrakenBaseAPI,
+    auto_offset_reset: str,
 ):
     """
     Reads trades from the Kraken Websocket API and publishes them to the given `kafka_topic`
@@ -29,7 +30,10 @@ def produce_trades(
     """
 
     # Create an Application instance with Kakfa
-    app = Application(broker_address=kafka_broker_address)
+    app = Application(
+        broker_address=kafka_broker_address,
+        auto_offset_reset=auto_offset_reset,
+    )
 
     # Define a topic `kafka_topic` with JSON serialization
 
@@ -37,7 +41,9 @@ def produce_trades(
     topic = app.topic(
         name=kafka_topic,
         value_serializer='json',
-        config=TopicConfig(num_partitions=2, replication_factor=1),
+        config=TopicConfig(
+            num_partitions=len(config.product_ids), replication_factor=1
+        ),
     )
 
     # Create a Producer instance
@@ -73,6 +79,7 @@ if __name__ == '__main__':
             kafka_broker_address=config.kafka_broker_address,
             kafka_topic=config.kafka_topic,
             kraken_api=kraken_api,
+            auto_offset_reset=config.auto_offset_reset,
         )
 
     except KeyboardInterrupt:
