@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from pydantic_settings import BaseSettings
 
@@ -14,6 +14,7 @@ class TopicToFeatureStoreConfig(BaseSettings):
     feature_group_event_time: str
 
     start_offline_materialization: bool
+    batch_size: Optional[int] = 1
 
     class Config:
         env_file = '.env'
