@@ -41,7 +41,11 @@ def transform_trade_to_ohlcv(
         value_deserializer='json',
         timestamp_extractor=custom_ts_extractor,
     )
-    output_topic = app.topic(name=kafka_output_topic, value_serializer='json')
+    output_topic = app.topic(
+        name=kafka_output_topic,
+        value_serializer='json',
+        config=TopicConfig(num_partitions=2, replication_factor=1),
+    )
 
     # Create a Quicstreams DataFrame
     sdf = app.dataframe(input_topic)
