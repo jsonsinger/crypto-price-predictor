@@ -1,0 +1,32 @@
+name: feature_pipeline
+networks:
+    redpanda_network:
+        external: true
+services:
+    trade-producer:
+        build:
+            context: ../services/trade-producer
+            dockerfile: Dockerfile
+        networks:
+            - redpanda_network
+        env_file:
+            - ../services/trade-producer/.env.prod
+
+    trade-to-ohlc:
+        build:
+            context: ../services/trade-to-ohlc
+            dockerfile: Dockerfile
+        networks:
+            - redpanda_network
+        env_file:
+            - ../services/trade-to-ohlc/.env.prod
+
+    topic-to-feature-store:
+        build:
+            context: ../services/topic-to-feature-store
+            dockerfile: Dockerfile
+        networks:
+            - redpanda_network
+        env_file:
+            - ../services/topic-to-feature-store/.env.prod
+            - ../services/topic-to-feature-store/credentials.env

@@ -10,6 +10,7 @@ run-dev-backfill:
 	AUTO_OFFSET_RESET=earliest \
 	poetry run python -m src.main
 
+# --no-cache flag is used to ensure that the latest version of the code is used e.g. docker build --no-cache -t trade-to-ohlcv .
 build:
 	docker build -t $(IMAGE_NAME) .
 
