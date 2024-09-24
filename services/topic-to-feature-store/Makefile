@@ -1,7 +1,16 @@
 IMAGE_NAME=topic-to-feature-store
+BATCH_SIZE=3000
+BACKFILL_INPUT_TOPIC=ohlcv_backfill
+BACKFILL_CONSUMER_GROUP=backfill_consumer_feature_store
 
 run-dev:
-	python -m src.main
+	poetry run python -m src.main
+
+run-dev-backfill:
+	BATCH_SIZE=$(BATCH_SIZE) \
+	KAFKA_INPUT_TOPIC=$(BACKFILL_INPUT_TOPIC) \
+	KAFKA_CONSUMER_GROUP=$(BACKFILL_CONSUMER_GROUP) \
+	poetry run python -m src.main
 
 build:
 	docker build -t $(IMAGE_NAME) .
@@ -11,6 +20,15 @@ run: build
 		--network=redpanda_network \
 		--env-file .env.prod \
 		--env-file credentials.env \
+		$(IMAGE_NAME)
+
+run-backfill: build
+	docker run \
+		--network=redpanda_network \
+		--env-file .env.prod \
+		-e BATCH_SIZE=$(BATCH_SIZE) \
+		-e KAFKA_INPUT_TOPIC=$(BACKFILL_INPUT_TOPIC) \
+		-e KAFKA_CONSUMER_GROUP=$(BACKFILL_CONSUMER_GROUP) \
 		$(IMAGE_NAME)
 
 clean:

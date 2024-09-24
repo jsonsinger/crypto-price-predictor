@@ -16,7 +16,7 @@ feature_store = project.get_feature_store()
 
 
 def write_to_feature_group(
-    value: str,
+    value: list[dict],
     feature_group_name: str,
     feature_group_version: int,
     feature_group_primary_keys: List[str],
@@ -52,7 +52,7 @@ def write_to_feature_group(
         return
 
     # Convert the value to a DataFrame
-    value_df = pd.DataFrame([value])
+    value_df = pd.DataFrame(value)
 
     # breakpoint()
 

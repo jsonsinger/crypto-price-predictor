@@ -17,6 +17,7 @@ def topic_to_feature_store(
     feature_group_primary_keys: List[str],
     feature_group_event_time: str,
     start_offline_materialization: bool,
+    batch_size: int,
 ):
     """
     Reads data from the given `kafka_input_topic` and writes it to `feature_group_name` in the feature store
@@ -30,6 +31,7 @@ def topic_to_feature_store(
         feature_group_primary_keys (List[str]): The primary keys of the feature group
         feature_group_event_time (str): The event time column of the feature group
         start_offline_materialization (bool): Whether to start offline materialization or not when we save the data to the feature group
+        batch_size (int): The number of rows to write to the feature group at once
 
     Returns:
         None
@@ -40,6 +42,8 @@ def topic_to_feature_store(
         broker_address=kafka_broker_address,
         consumer_group=kafka_consumer_group,
     )
+
+    batch = []
 
     with app.get_consumer() as consumer:
         consumer.subscribe(topics=[kafka_input_topic])
@@ -59,9 +63,23 @@ def topic_to_feature_store(
             # Parse the value into a dictionary
             value = json.loads(value)
 
+            # Append the value to the batch
+            batch.append(value)
+
+            # If the batch is not full keep polling
+            if len(batch) < batch_size:
+                # TODO - cater for partial batches over an elapsed period of time
+                logger.debug(
+                    f'Batch size: {len(batch)} of {batch_size}. Continue polling...'
+                )
+                continue
+
+            logger.debug(
+                f'Batch size: {len(batch)} of {batch_size}. Pushing to Feature Store.'
+            )
             # Write the data to the feature group
             write_to_feature_group(
-                value,
+                batch,
                 feature_group_name,
                 feature_group_version,
                 feature_group_primary_keys,
@@ -69,15 +87,24 @@ def topic_to_feature_store(
                 start_offline_materialization,
             )
 
+            # Clear the batch
+            batch = []
+
 
 if __name__ == '__main__':
-    topic_to_feature_store(
-        kafka_broker_address=config.kafka_broker_address,
-        kafka_input_topic=config.kafka_input_topic,
-        kafka_consumer_group=config.kafka_consumer_group,
-        feature_group_name=config.feature_group_name,
-        feature_group_version=config.feature_group_version,
-        feature_group_primary_keys=config.feature_group_primary_keys,
-        feature_group_event_time=config.feature_group_event_time,
-        start_offline_materialization=config.start_offline_materialization,
-    )
+    try:
+        topic_to_feature_store(
+            kafka_broker_address=config.kafka_broker_address,
+            kafka_input_topic=config.kafka_input_topic,
+            kafka_consumer_group=config.kafka_consumer_group,
+            feature_group_name=config.feature_group_name,
+            feature_group_version=config.feature_group_version,
+            feature_group_primary_keys=config.feature_group_primary_keys,
+            feature_group_event_time=config.feature_group_event_time,
+            start_offline_materialization=config.start_offline_materialization,
+            batch_size=config.batch_size,
+        )
+    except KeyboardInterrupt:
+        logger.info(
+            'Topic to Feature Store is shutting down! Time to let the service cool off.'
+        )
