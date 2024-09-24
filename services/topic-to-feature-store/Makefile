@@ -12,6 +12,7 @@ run-dev-backfill:
 	KAFKA_CONSUMER_GROUP=$(BACKFILL_CONSUMER_GROUP) \
 	poetry run python -m src.main
 
+# --no-cache flag is used to ensure that the latest version of the code is used e.g. docker build --no-cache -t topic-to-feature-store .
 build:
 	docker build -t $(IMAGE_NAME) .
 
