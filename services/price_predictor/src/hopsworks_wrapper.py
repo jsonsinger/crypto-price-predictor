@@ -9,7 +9,7 @@ from hsfs.feature_store import FeatureStore
 from src.config import HopsworksConfig
 
 
-class OhlcDataReader:
+class HopsworksWrapper:
     """
     A class for reading OHLC data from the feature store
     """

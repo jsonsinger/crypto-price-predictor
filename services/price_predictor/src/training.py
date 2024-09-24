@@ -2,7 +2,7 @@ from typing import Optional
 
 from loguru import logger
 
-from src.ohlc_data_reader import OhlcDataReader
+from src.hopsworks_wrapper import HopsworksWrapper
 from src.config import config, hopsworks_config, HopsworksConfig
 from src.models.current_price_baseline import CurrentPriceBaseline
 
@@ -44,7 +44,7 @@ def train_model(
     """
 
     # Load features from the Feature Store
-    ohlc_data_reader = OhlcDataReader(
+    hopsworks_wrapper = HopsworksWrapper(
         ohlc_window_sec=ohlc_window_sec,
         hopsworks_config=hopsworks_config,
         feature_view_name=feature_view_name,
@@ -53,7 +53,7 @@ def train_model(
         feature_group_version=feature_group_version,
     )
 
-    ohlc_data = ohlc_data_reader.read_from_offline_store(
+    ohlc_data = hopsworks_wrapper.read_from_offline_store(
         product_id=product_id,
         last_n_days=last_n_days,
     )
