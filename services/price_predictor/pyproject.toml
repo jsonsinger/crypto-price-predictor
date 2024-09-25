@@ -12,6 +12,8 @@ loguru = "^0.7.2"
 pydantic-settings = "^2.5.2"
 scikit-learn = "^1.5.2"
 comet-ml = "^3.46.0"
+xgboost = "^2.1.1"
+graphviz = "^0.20.3"
 
 
 [build-system]
