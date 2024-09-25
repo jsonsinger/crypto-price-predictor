@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings
-
+from pydantic import ConfigDict
 
 class PricePredictorConfig(BaseSettings):
     feature_view_name: str
@@ -11,17 +11,30 @@ class PricePredictorConfig(BaseSettings):
     last_n_days: int
     forecast_window_min: int
 
-    class Config:
-        env_file = ".env"
+    model_config = ConfigDict(
+        env_file=".env",
+    )
 
 
 class HopsworksConfig(BaseSettings):
     hopsworks_project_name: str
     hopsworks_api_key: str
 
-    class Config:
-        env_file = "credentials.env"
+    model_config = ConfigDict(
+        env_file="credentials.env",
+        extra = 'allow'
+    )
+        
+class CometConfig(BaseSettings):
+    comet_api_key: str
+    comet_project_name: str
+
+    model_config = ConfigDict(
+        env_file="credentials.env",
+        extra = 'allow'
+    )
 
 
 config = PricePredictorConfig()
 hopsworks_config = HopsworksConfig()
+comet_config = CometConfig()
