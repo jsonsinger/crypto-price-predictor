@@ -3812,6 +3812,19 @@ pure-eval = "*"
 tests = ["cython", "littleutils", "pygments", "pytest", "typeguard"]
 
 [[package]]
+name = "ta-lib"
+version = "0.4.32"
+description = "Python wrapper for TA-Lib"
+optional = false
+python-versions = "*"
+files = [
+    {file = "TA-Lib-0.4.32.tar.gz", hash = "sha256:fb74c323217bead847a045c97aa17bfd147aef17e20a75857ea0f8f7ee7cdaa0"},
+]
+
+[package.dependencies]
+numpy = "*"
+
+[[package]]
 name = "terminado"
 version = "0.18.1"
 description = "Tornado websocket backend for the Xterm.js Javascript terminal emulator library."
@@ -4248,4 +4261,4 @@ scikit-learn = ["scikit-learn"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "2569f34fb1ccc42d1d9eb0c9a6feb7fdff37bdd30726463b43923b1014ead21d"
+content-hash = "d70745927d661af57fb2842b2de7b82f76381dee1f6df503f4c673641f254928"
