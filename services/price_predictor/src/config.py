@@ -1,5 +1,6 @@
-from pydantic_settings import BaseSettings
 from pydantic import ConfigDict
+from pydantic_settings import BaseSettings
+
 
 class PricePredictorConfig(BaseSettings):
     feature_view_name: str
@@ -10,6 +11,8 @@ class PricePredictorConfig(BaseSettings):
     product_id: str
     last_n_days: int
     forecast_window_min: int
+    n_search_trials: int
+    n_splits: int
 
     model_config = ConfigDict(
         env_file=".env",

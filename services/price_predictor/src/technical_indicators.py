@@ -1,6 +1,6 @@
-import talib
-import pandas as pd
 import numpy as np
+import pandas as pd
+import talib
 
 #class TechnicalIndicators:
     
@@ -15,7 +15,7 @@ def add_technical_indicators(df: pd.DataFrame) -> pd.DataFrame:
         pd.DataFrame: The dataframe with the technical indicators added.
     """
 
-        # Ensure we have the necessary columns
+    # Ensure we have the necessary columns
     required_columns = ['open', 'high', 'low', 'close', 'volume']
     if not all(col in df.columns for col in required_columns):
         raise ValueError(f"DataFrame must contain columns: {required_columns}")
@@ -41,13 +41,13 @@ def add_technical_indicators(df: pd.DataFrame) -> pd.DataFrame:
     # 5. Bollinger Bands: Helps measure market volatility and identify overbought or oversold conditions.
     df['upper_bb'], df['middle_bb'], df['lower_bb'] = talib.BBANDS(df['close'])
 
-        # 6. Stochastic Oscillator: Compares a closing price to its price range over a period of time, useful for identifying potential reversal points.
+    # 6. Stochastic Oscillator: Compares a closing price to its price range over a period of time, useful for identifying potential reversal points.
     df['slowk'], df['slowd'] = talib.STOCH(df['high'], df['low'], df['close'])
 
     # 7. On-Balance Volume (OBV): Relates volume to price change, potentially predicting price movements based on volume trends.
     df['obv'] = talib.OBV(df['close'], df['volume'])
 
-        # 10. Average True Range (ATR): Measures market volatility, which can be useful for setting stop-loss orders or identifying potential breakouts.
+    # 10. Average True Range (ATR): Measures market volatility, which can be useful for setting stop-loss orders or identifying potential breakouts.
     df['atr'] = talib.ATR(df['high'], df['low'], df['close'])
 
     # 11. Commodity Channel Index (CCI): Helps identify cyclical trends and can signal overbought or oversold conditions.
@@ -115,13 +115,133 @@ def add_technical_indicators(df: pd.DataFrame) -> pd.DataFrame:
 
     # 25. Price change ratio
     df['price_change_ratio'] = df['close'] / df['open']
+    
+    # 26. Directional Movement Index (DMI)
+    df['plus_di'] = talib.PLUS_DI(df['high'], df['low'], df['close'], timeperiod=14)
+    df['minus_di'] = talib.MINUS_DI(df['high'], df['low'], df['close'], timeperiod=14)
+    df['dx'] = talib.DX(df['high'], df['low'], df['close'], timeperiod=14)
+
+    # 27. Kaufman's Adaptive Moving Average (KAMA)
+    df['kama'] = talib.KAMA(df['close'], timeperiod=30)
+
+    # 28. Fractal Adaptive Moving Average (FRAMA)
+    def frama(close, period=16, FC=1, SC=200):
+        n = (period - 1) // 2
+        hh = close.rolling(n).max()
+        ll = close.rolling(n).min()
+        N1 = (hh - ll) / period
+        N2 = N1.shift(n)
+        N3 = (hh.shift(n) - ll.shift(n)) / period
+        D = (np.log(N1 + N2) - np.log(N3)) / np.log(2)
+        alpha = np.exp(-4.6 * (D - 1))
+        alpha = alpha.clip(FC/SC, 1)
+        frama = close.copy()
+        for i in range(period, len(close)):
+            frama.iloc[i] = alpha.iloc[i] * close.iloc[i] + (1 - alpha.iloc[i]) * frama.iloc[i-1]
+        return frama
+
+    df['frama'] = frama(df['close'])
+
+    # 29. Volume Weighted Average Price (VWAP)
+    df['vwap'] = (df['volume'] * (df['high'] + df['low'] + df['close']) / 3).cumsum() / df['volume'].cumsum()
+
+    # 30. Elder's Force Index
+    df['elder_force_index'] = (df['close'] - df['close'].shift(1)) * df['volume']
+    df['elder_force_index_13'] = df['elder_force_index'].ewm(span=13, adjust=False).mean()
+
+    # 31. Accumulation/Distribution Line (ADL)
+    df['adl'] = talib.AD(df['high'], df['low'], df['close'], df['volume'])
+
+    # 32. Coppock Curve
+    roc1 = talib.ROC(df['close'], timeperiod=14)
+    roc2 = talib.ROC(df['close'], timeperiod=11)
+    df['coppock'] = (roc1 + roc2).ewm(span=10, adjust=False).mean()
+
+    # 33. Ease of Movement
+    emv = ((df['high'] + df['low']) / 2 - (df['high'].shift(1) + df['low'].shift(1)) / 2) / (df['volume'] / (df['high'] - df['low']))
+    df['emv'] = emv.rolling(window=14).mean()
+
+    # 34. Mass Index
+    def mass_index(high, low, period=25, ema_period=9):
+        amplitude = high - low
+        ema1 = amplitude.ewm(span=ema_period, adjust=False).mean()
+        ema2 = ema1.ewm(span=ema_period, adjust=False).mean()
+        mass = ema1 / ema2
+        return mass.rolling(window=period).sum()
+    
+    df['mass_index'] = mass_index(df['high'], df['low'])
+    
+    
+    # Price action features
+    df['body'] = df['close'] - df['open']
+    df['wick_upper'] = df['high'] - np.maximum(df['close'], df['open'])
+    df['wick_lower'] = np.minimum(df['close'], df['open']) - df['low']
+
+    # Candlestick patterns
+    df['doji'] = np.where(np.abs(df['body']) / (df['high'] - df['low']) < 0.1, 1, 0)
+    df['hammer'] = np.where((df['wick_lower'] > 2*np.abs(df['body'])) & (df['wick_upper'] < np.abs(df['body'])), 1, 0)
+    df['shooting_star'] = np.where((df['wick_upper'] > 2*np.abs(df['body'])) & (df['wick_lower'] < np.abs(df['body'])), 1, 0)
+    
+    df['rsi_macd_interaction'] = df['rsi_14'] * df['macd']
+    df['volume_price_interaction'] = df['volume'] * df['close']
+    
+    # Use this function after calculating all other features
+    df = add_lagged_features(df, ['close', 'volume', 'rsi_14', 'macd'])
 
     # Remove NaN values
     # df.dropna(inplace=True)
 
+    # # 1. Add Simple Moving Average (SMA) with a
+    # # - 7-period window
+    # # - 14-period window
+    # # - 28-period window
+    # df['SMA_7'] = talib.SMA(df['close'], timeperiod=7)
+    # df['SMA_14'] = talib.SMA(df['close'], timeperiod=14)
+    # df['SMA_28'] = talib.SMA(df['close'], timeperiod=28)
+    
+    # # 2. Add Exponential Moving Average (EMA) with a
+    # # - 7-period window
+    # # - 14-period window
+    # # - 28-period window
+    # df['EMA_7'] = talib.EMA(df['close'], timeperiod=7)
+    # df['EMA_14'] = talib.EMA(df['close'], timeperiod=14)
+    # df['EMA_28'] = talib.EMA(df['close'], timeperiod=28)
+
+    # # 3. Relative Strength Index (RSI)
+    # df['RSI_14'] = talib.RSI(df['close'], timeperiod=14)
+
+    # # 4. Moving Average Convergence Divergence (MACD)
+    # macd, macd_signal, _ = talib.MACD(df['close'], fastperiod=12, slowperiod=26, signalperiod=9)
+    # df['MACD'] = macd
+    # df['MACD_Signal'] = macd_signal
+
+    # # 5. Bollinger Bands
+    # upper, middle, lower = talib.BBANDS(df['close'], timeperiod=20, nbdevup=2, nbdevdn=2)
+    # df['BB_Upper'] = upper
+    # df['BB_Middle'] = middle
+    # df['BB_Lower'] = lower
+
+    # # 6. Stochastic Oscillator
+    # slowk, slowd = talib.STOCH(df['high'], df['low'], df['close'], fastk_period=14, slowk_period=3, slowk_matype=0, slowd_period=3, slowd_matype=0)
+    # df['Stoch_K'] = slowk
+    # df['Stoch_D'] = slowd
+
+    # # 7. On-Balance Volume (OBV)
+    # df['OBV'] = talib.OBV(df['close'], df['volume'])
+
+    # # 8. Average True Range (ATR)
+    # df['ATR'] = talib.ATR(df['high'], df['low'], df['close'], timeperiod=14)
+
+    # # 9. Commodity Channel Index (CCI)
+    # df['CCI'] = talib.CCI(df['high'], df['low'], df['close'], timeperiod=14)
+
+    # # 10. Chaikin Money Flow (CMF)
+    # df['CMF'] = talib.ADOSC(df['high'], df['low'], df['close'], df['volume'], fastperiod=3, slowperiod=10)
+
+    
     return df
     
-def add_lagged_features(df: pd.DataFrame, lag_periods: list = [1, 3, 5]) -> pd.DataFrame:
+def add_lagged_features(df: pd.DataFrame, columns: list, lag_periods: list = [1, 3, 5, 10]) -> pd.DataFrame:
     """
     Add lagged versions of all features in the dataframe.
 
@@ -132,7 +252,7 @@ def add_lagged_features(df: pd.DataFrame, lag_periods: list = [1, 3, 5]) -> pd.D
     Returns:
         pd.DataFrame: The dataframe with lagged features added
     """
-    for col in df.columns:
+    for col in columns:
         for lag in lag_periods:
             df[f'{col}_lag_{lag}'] = df[col].shift(lag)
     

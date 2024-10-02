@@ -15,8 +15,23 @@ comet-ml = "^3.46.0"
 xgboost = "^2.1.1"
 graphviz = "^0.20.3"
 ta-lib = "^0.4.32"
+optuna = "^4.0.0"
 
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.6.7"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.format]
+quote-style = "single"
+indent-style = "space"
+docstring-code-format = true
+
+[tool.ruff.lint]
+extend-select = ["I"]
