@@ -18,7 +18,10 @@ from src.config import (
 from src.hopsworks_wrapper import HopsworksWrapper
 from src.models.current_price_baseline import CurrentPriceBaseline
 from src.models.xgboost_model import XGBoostModel
-from src.technical_indicators import add_technical_indicators
+from src.technical_indicators import (
+    add_technical_indicators,
+    add_temporal_features,
+)
 
 import joblib
 import os
@@ -136,6 +139,10 @@ def train_model(
     #logger.debug("Calculating technical indicators")
     X_train = add_technical_indicators(X_train)
     X_test = add_technical_indicators(X_test)
+    
+    # Add temporal features
+    X_train = add_temporal_features(X_train)
+    X_test = add_temporal_features(X_test)
 
     experiment.log_parameter('train_features', X_train.columns.tolist())
     experiment.log_parameter('test_features', X_test.columns.tolist())

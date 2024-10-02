@@ -3,7 +3,26 @@ import pandas as pd
 import talib
 
 #class TechnicalIndicators:
-    
+
+def add_temporal_features(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Add temporal features to the dataframe
+
+    Args:
+        df (pd.DataFrame): The input dataframe with the original features
+
+    Returns:
+        pd.DataFrame: The dataframe with the temporal features added.
+    """
+    df['hour'] = pd.to_datetime(df['timestamp_ms'], unit='ms').dt.hour
+    df['day'] = pd.to_datetime(df['timestamp_ms'], unit='ms').dt.day
+    df['month'] = pd.to_datetime(df['timestamp_ms'], unit='ms').dt.month
+    df['year'] = pd.to_datetime(df['timestamp_ms'], unit='ms').dt.year
+    df['day_of_week'] = pd.to_datetime(df['timestamp_ms'], unit='ms').dt.dayofweek
+    df["weekday"] = pd.to_datetime(df['timestamp_ms'], unit='ms').dt.weekday
+    df['is_weekend'] = pd.to_datetime(df['timestamp_ms'], unit='ms').dt.isin(['Saturday', 'Sunday'])
+    return df
+
 def add_technical_indicators(df: pd.DataFrame) -> pd.DataFrame:
     """
     Add technical indicators to the dataframe
