@@ -131,18 +131,18 @@ def train_model(
     y_test = test_df["target_price"]
     X_test = test_df.drop(columns=["target_price"])
 
-    # Drop categorical features (for testing purposes)    
-    X_train = X_train[['open', 'high', 'low', 'close', 'volume']]
-    X_test = X_test[['open', 'high', 'low', 'close', 'volume']]
+    # Drop categorical [product_id] features (for testing purposes)    
+    X_train = X_train[['open', 'high', 'low', 'close', 'volume', 'timestamp_ms']]
+    X_test = X_test[['open', 'high', 'low', 'close', 'volume', 'timestamp_ms']]
 
+    # Add temporal features
+    X_train = add_temporal_features(X_train)
+    X_test = add_temporal_features(X_test)
+    
     # Use TA-Lib to add technical indicators
     #logger.debug("Calculating technical indicators")
     X_train = add_technical_indicators(X_train)
     X_test = add_technical_indicators(X_test)
-    
-    # Add temporal features
-    X_train = add_temporal_features(X_train)
-    X_test = add_temporal_features(X_test)
 
     experiment.log_parameter('train_features', X_train.columns.tolist())
     experiment.log_parameter('test_features', X_test.columns.tolist())

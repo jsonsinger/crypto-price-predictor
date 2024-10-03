@@ -1,10 +1,10 @@
-from typing import Optional
 import time
+from typing import Optional
 
-import pandas as pd
 import hopsworks
-from hsfs.feature_view import FeatureView
+import pandas as pd
 from hsfs.feature_store import FeatureStore
+from hsfs.feature_view import FeatureView
 
 from src.config import HopsworksConfig
 
