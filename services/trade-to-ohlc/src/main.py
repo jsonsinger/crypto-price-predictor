@@ -76,7 +76,8 @@ def transform_trade_to_ohlcv(
     sdf.update(logger.debug)
 
     # Publish the OHLC data to the output topic
-    sdf.to_topic(output_topic)
+    sdf.to_topic(output_topic, key=lambda row: str(row['product_id']))
+    
 
     app.run(sdf)
 
